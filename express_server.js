@@ -7,7 +7,7 @@ const urlDatabase = {
     longURL: "http://www.lighthouselabs.ca",
     userID: "userRandomID",
   },
-  "9sm5xK": { 
+  "9sm5xK": {
     longURL:"http://www.google.com",
     userID: "user2RandomID",
   },
@@ -25,12 +25,12 @@ function generateRandomString() {
 const urlsForUser = function(urlDatabase, userID) {
   let userURLS = {};
   for (let key in urlDatabase) {
-    if (urlDatabase[key].userID) {
+    if (urlDatabase[key].userID === userID) {
       userURLS[key] = urlDatabase[key];
     }
   }
   return userURLS;
-}
+};
 
 const users = {
   userRandomID: {
@@ -72,13 +72,12 @@ app.get("/hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const user = users[req.cookies["user_id"]];
-  if(!user) {
+  const userID = req.cookies["user_id"];
+  const userURLs = urlsForUser(urlDatabase, userID);
 
-  }
   const templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies["user_id"]],
+    urls: userURLs,
+    user: users[userID],
   };
   res.render("urls_index", templateVars);
 });
@@ -87,7 +86,7 @@ app.get("/urls/new", (req, res) => {
   const user = users[req.cookies["user_id"]];
   if (!user) {
     res.redirect('/login');
-  };
+  }
   const templateVars = {
     user: users[req.cookies["user_id"]],
   };
@@ -95,15 +94,22 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const urlID = urlDatabase[req.params.id] 
-    if (!urlID) {
-      res.status(404).send("Error 404: This link does not exist")
-    };
-    
+  const userID = req.cookies["user_id"];
+  const urlID = req.params.id;
+  const url = urlDatabase[urlID];
+
+  if (!url) {
+    res.status(404).send("Error 404: This link does not exist");
+    return;
+  }
+  if (url.userID !== userID) {
+    res.status(403).send("Access denied, this link does not belong to you");
+    return;
+  }
   const templateVars = {
-    id: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL,
-    user: req.cookies["user_id"],
+    id: urlID,
+    longURL: url.longURL,
+    user: users[userID],
   };
   res.render("urls_show", templateVars);
 });
@@ -146,15 +152,45 @@ app.post("/urls", (req, res) => {
 });
 
 app.post('/urls/:shortURL/delete', (req, res) => {
-  delete urlDatabase[req.params.shortURL];
-  res.redirect('/urls');
+  const userID = req.cookies["user_id"];
+  const urlID = req.params.id;
+  const url = urlDatabase[urlID];
+
+  if (!userID) {
+    res.status(403).send("Access denied: You need to be logged in to delete URLs");
+    return;
+  }
+  if (!url) {
+    res.status(404).send("Error 404: This link does not exist");
+    return;
+  }
+  if (url.userID !== userID) {
+    res.status(403).send("Access denied: You can only delete your own URLs");
+    return;
+  }
+  delete urlDatabase[urlID];
+  res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL", (req, res) => {
-  const shortURL = req.params.shortURL;
-  const longURL = req.body.longURL;
-  urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/${shortURL}`);
+  const userID = req.cookies["user_id"];
+  const urlID = req.params.id;
+  const url = urlDatabase[urlID];
+
+  if (!userID) {
+    res.status(403).send("Access denied: You need to be logged in to edit URLs");
+    return;
+  }
+  if (!url) {
+    res.status(404).send("Error 404: This link does not exist");
+    return;
+  }
+  if (url.userID !== userID) {
+    res.status(403).send("Access denied: You can only edit your own URLs");
+    return;
+  }
+  urlDatabase[urlID].longURL = req.body.longURL;
+  res.redirect("/urls");
 });
 
 app.post("/login", (req, res) => {
