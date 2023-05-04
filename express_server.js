@@ -64,6 +64,10 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
+  const user = users[req.cookies["user_id"]];
+  if (!user) {
+    res.redirect('/login');
+  };
   const templateVars = {
     user: users[req.cookies["user_id"]],
   };
@@ -71,6 +75,11 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
+  const urlID = urlDatabase[req.params.id] 
+    if (!urlID) {
+      res.status(404).send("Error 404: This link does not exist")
+    };
+    
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
@@ -103,6 +112,11 @@ app.get('/login', (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
+  const user = users[req.cookies["user_id"]];
+  if (!user) {
+    res.status(401).send("You must be logged in to create a new URL");
+  };
+
   const longURL = req.body.longURL;
   const shortId = generateRandomString();
   urlDatabase[shortId] = longURL;
