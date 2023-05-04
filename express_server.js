@@ -22,6 +22,16 @@ function generateRandomString() {
   return result;
 }
 
+const urlsForUser = function(urlDatabase, userID) {
+  let userURLS = {};
+  for (let key in urlDatabase) {
+    if (urlDatabase[key].userID) {
+      userURLS[key] = urlDatabase[key];
+    }
+  }
+  return userURLS;
+}
+
 const users = {
   userRandomID: {
     id: "userRandomID",
@@ -125,11 +135,11 @@ app.post("/urls", (req, res) => {
   const user = users[req.cookies["user_id"]];
   if (!user) {
     res.status(401).send("You must be logged in to create a new URL");
-  };
+  }
 
   const longURL = req.body.longURL;
   const shortId = generateRandomString();
-  urlDatabase[shortId] = longURL;
+  urlDatabase[shortId] = { longURL: longURL, userID: user.id };
   console.log(`Parsed request body: ${JSON.stringify(req.body)}`);
   console.log(`New short URL ID: ${shortId}`);
   res.redirect(`/urls/${shortId}`);
