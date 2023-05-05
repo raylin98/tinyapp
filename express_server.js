@@ -205,10 +205,10 @@ app.post("/login", (req, res) => {
       break;
     }
   }
-  if (foundUser === null) {
+  if (!foundUser) {
     return res.status(403).send('Account does not exist');
   }
-  if (bcrypt.hashSync(foundUser.password, 10) !== password) {
+  if (!bcrypt.compareSync(password, foundUser.password)) {
     return res.status(403).send('You have entered an incorrect password. Please check for any spelling errors');
   }
   res.cookie("user_id", foundUser.id);
