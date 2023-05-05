@@ -47,7 +47,7 @@ const users = {
   },
 };
 
-const existingUser = function(email) {
+const getUserByEmail = function(email) {
   for (const user in users) {
     if (users[user].email === email) {
       return true;
@@ -234,7 +234,7 @@ app.post('/register', (req, res) => {
     return res.status(400).send("Email or password cannot be empty.");
   }
 
-  if (existingUser(email)) {
+  if (getUserByEmail(email)) {
     return res.status(400).send("Email already exists.");
   }
 
