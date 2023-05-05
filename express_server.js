@@ -2,6 +2,8 @@ const express = require("express");
 const app = express();
 const PORT = 8080; // default port 8080
 const cookieParser = require('cookie-parser');
+const bcrypt = require('bcryptjs');
+
 const urlDatabase = {
   "b2xVn2":{
     longURL: "http://www.lighthouselabs.ca",
@@ -36,12 +38,12 @@ const users = {
   userRandomID: {
     id: "userRandomID",
     email: "user@example.com",
-    password: "purple-monkey-dinosaur",
+    password: bcrypt.hashSync("purple-monkey-dinosaur", 10),
   },
   user2RandomID: {
     id: "user2RandomID",
     email: "user2@example.com",
-    password: "dishwasher-funk",
+    password: bcrypt.hashSync("dishwasher-funk", 10),
   },
 };
 
@@ -206,7 +208,7 @@ app.post("/login", (req, res) => {
   if (foundUser === null) {
     return res.status(403).send('Account does not exist');
   }
-  if (foundUser.password !== password) {
+  if (bcrypt.hashSync(foundUser.password, 10) !== password) {
     return res.status(403).send('You have entered an incorrect password. Please check for any spelling errors');
   }
   res.cookie("user_id", foundUser.id);
@@ -220,7 +222,7 @@ app.post("/logout",(req,res) => {
 
 app.post('/register', (req, res) => {
   const email = req.body.email;
-  const password = req.body.password;
+  const password = bcrypt.hashSync(req.body.password, 10);
 
   if (email === "" || password === "") {
     return res.status(400).send("Email or password cannot be empty.");
