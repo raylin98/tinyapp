@@ -7,13 +7,14 @@ function generateRandomString() {
     return result;
   };
 
-const getUserByEmail = function(email) {
-    for (const user in email) {
-      if (email[user].email === email) {
-        return true;
+  const getUserByEmail = function(email, users) {
+    for (const user in users) {
+      if (users[user].email === email) {
+        return users[user];
       }
-    }  return false;
-};
+    }
+    return null;
+  };
 
  const urlsForUser = function(urlDatabase, userID) {
     let userURLS = {};
