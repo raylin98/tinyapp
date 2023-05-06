@@ -15,7 +15,7 @@ const urlDatabase = {
   },
 };
 
-const {generateRandomString, getUserByEmail, urlsForUser } = require('./helpers.js')
+const {generateRandomString, getUserByEmail, urlsForUser } = require('./helpers.js');
 
 const users = {
   userRandomID: {
@@ -37,8 +37,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieSession({
   name: "session",
   keys: ["arm", "leg", "awesome"],
-  maxAge: 24 * 60 * 60 * 1000 
-}))
+  maxAge: 24 * 60 * 60 * 1000
+}));
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -190,8 +190,7 @@ app.post("/login", (req, res) => {
   if (!bcrypt.compareSync(password, foundUser.password)) {
     return res.status(403).send('You have entered an incorrect password. Please check for any spelling errors');
   }
-  req.session.user_id = foundUser.id
-  //res.cookie("user_id", foundUser.id);
+  req.session.user_id = foundUser.id;
   res.redirect('/urls');
 });
 
@@ -220,12 +219,9 @@ app.post('/register', (req, res) => {
   };
   users[newUserID] = newUser;
 
-  req.session.user_id = newUserID
-  //res.cookie("user_id", newUserID);   
+  req.session.user_id = newUserID;
   res.redirect('/urls');
 });
-
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
