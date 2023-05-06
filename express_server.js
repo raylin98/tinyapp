@@ -155,7 +155,7 @@ app.post('/urls/:shortURL/delete', (req, res) => {
 
 app.post("/urls/:shortURL", (req, res) => {
   const userID = req.session.user_id;
-  const urlID = req.params.id;
+  const urlID = req.params.shortURL;
   const url = urlDatabase[urlID];
 
   if (!userID) {
