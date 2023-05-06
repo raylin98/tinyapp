@@ -15,24 +15,7 @@ const urlDatabase = {
   },
 };
 
-function generateRandomString() {
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  let result = '';
-  for (let i = 0; i < 6; i++) {
-    result += characters.charAt(Math.floor(Math.random() * characters.length));
-  }
-  return result;
-}
-
-const urlsForUser = function(urlDatabase, userID) {
-  let userURLS = {};
-  for (let key in urlDatabase) {
-    if (urlDatabase[key].userID === userID) {
-      userURLS[key] = urlDatabase[key];
-    }
-  }
-  return userURLS;
-};
+const {generateRandomString, getUserByEmail, urlsForUser } = require('./helpers.js')
 
 const users = {
   userRandomID: {
@@ -45,14 +28,6 @@ const users = {
     email: "user2@example.com",
     password: bcrypt.hashSync("dishwasher-funk", 10),
   },
-};
-
-const getUserByEmail = function(email) {
-  for (const user in users) {
-    if (users[user].email === email) {
-      return true;
-    }
-  }  return false;
 };
 
 app.set("view engine", "ejs");
@@ -79,7 +54,6 @@ app.get("/hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const userID = req.session.user_id;
-  console.log(userID);
   const userURLs = urlsForUser(urlDatabase, userID);
 
   const templateVars = {
@@ -160,7 +134,7 @@ app.post("/urls", (req, res) => {
 
 app.post('/urls/:shortURL/delete', (req, res) => {
   const userID = req.session.user_id;
-  const urlID = req.params.id;
+  const urlID = req.params.shortURL;
   const url = urlDatabase[urlID];
 
   if (!userID) {
@@ -245,7 +219,7 @@ app.post('/register', (req, res) => {
     password: password,
   };
   users[newUserID] = newUser;
-  console.log(users);
+
   req.session.user_id = newUserID
   //res.cookie("user_id", newUserID);   
   res.redirect('/urls');
